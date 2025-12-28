@@ -1,10 +1,16 @@
 import sqlite3
 import json
+import os
 from datetime import datetime
+
+# Get the absolute path to the database
+# This ensures the database works both locally and on PythonAnywhere
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_PATH = os.path.join(BASE_DIR, 'portfolio.db')
 
 def get_db_connection():
     """Create database connection"""
-    conn = sqlite3.connect('portfolio.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 

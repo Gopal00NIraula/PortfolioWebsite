@@ -7,9 +7,10 @@ from database import *
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin credentials (you should change these!)
-ADMIN_USERNAME = 'admin'
-ADMIN_PASSWORD = 'password123'  # Change this!
+# Admin credentials from environment variables for security
+# In production (PythonAnywhere), set these in your .env file
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'password123')  # Change this!
 
 UPLOAD_FOLDER = 'static/images/projects'
 README_FOLDER = 'static/readme'

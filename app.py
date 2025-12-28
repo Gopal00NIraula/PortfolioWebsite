@@ -7,8 +7,10 @@ from database import get_projects_by_category, init_db
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
+# Use environment variable for secret key, fallback to default for local development
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
 
 # Register admin blueprint
 app.register_blueprint(admin_bp)
@@ -106,5 +108,8 @@ def api_categories():
     """API endpoint to get portfolio categories"""
     return jsonify(PORTFOLIO_CATEGORIES)
 
+# Only run the development server when executed directly
+# PythonAnywhere will use the WSGI file instead
 if __name__ == '__main__':
+    # This is for local development only
     app.run(debug=True, host='0.0.0.0', port=5000)
