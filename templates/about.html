@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Zenos - About{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <div class="about-hero">
+        <div class="about-profile">
+            <div class="profile-image-container">
+                <img src="{{ url_for('static', filename='images/About.JPG') }}" alt="{{ info.name }}">
+                <div class="profile-overlay"></div>
+            </div>
+            <h1>{{ info.name }}</h1>
+            <p class="profile-title">{{ info.title }}</p>
+            <div class="social-links">
+                {% if info.social_links.discord %}
+                <a href="{{ info.social_links.discord }}" target="_blank" title="Discord">
+                    <img src="{{ url_for('static', filename='images/discord-brands.svg') }}" alt="Discord">
+                </a>
+                {% endif %}
+                {% if info.social_links.facebook %}
+                <a href="{{ info.social_links.facebook }}" target="_blank" title="Facebook">
+                    <img src="{{ url_for('static', filename='images/facebook-brands.svg') }}" alt="Facebook">
+                </a>
+                {% endif %}
+                {% if info.social_links.linkedin %}
+                <a href="{{ info.social_links.linkedin }}" target="_blank" title="LinkedIn">
+                    <img src="{{ url_for('static', filename='images/linkedin-brands.svg') }}" alt="LinkedIn">
+                </a>
+                {% endif %}
+                <a href="mailto:{{ info.social_links.email }}" title="Email">
+                    <img src="{{ url_for('static', filename='images/envelope-solid.svg') }}" alt="Email">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-content">
+        <div class="about-section">
+            <h2>About Me</h2>
+            <p>{{ info.bio }}</p>
+        </div>
+
+        <div class="about-grid">
+            <div class="about-card">
+                <h3>Education</h3>
+                <ul>
+                    <li>Currently pursuing a Bachelor of Science in {{ info.major }} at {{ info.university }}.</li>
+                    <li>Relevant coursework includes Fundamental Programming (Python) and Development of Databases.</li>
+                </ul>
+            </div>
+
+            <div class="about-card">
+                <h3>Technical Skills</h3>
+                <ul>
+                    <li><strong>Languages & Tools:</strong> Python, MySQL, SQL, Microsoft Excel, C++, Arduino Programming, Flask, HTML/CSS, JavaScript.</li>
+                    <li><strong>Strengths:</strong> Data Extraction, Data Visualization, Analytical Problem-Solving, Web Development</li>
+                </ul>
+                <p class="card-note">I am always exploring new ways to leverage technology to find insights, automate tasks, and improve decision-making.</p>
+            </div>
+
+            <div class="about-card">
+                <h3>Languages</h3>
+                <ul>
+                    <li>Fluent in Nepali, English, and Hindi.</li>
+                    <li>Comfortable working in multicultural and diverse environments.</li>
+                </ul>
+            </div>
+
+            <div class="about-card">
+                <h3>Professional Experience</h3>
+                <ul>
+                    <li><strong>Event Manager, Nepalese Student Association (YSU):</strong> Planned and managed campus events; created documentation and analyzed event data to optimize resources.</li>
+                    <li><strong>Orientation Leader, YSU:</strong> Guided international students through their university transition; developed excellent communication and leadership skills.</li>
+                    <li><strong>Programming Tutor, Robotics Association of Nepal:</strong> Taught Arduino Programming and electronics to high school students in Kathmandu.</li>
+                </ul>
+            </div>
+
+            <div class="about-card highlight-card">
+                <h3>Strengths & Passions</h3>
+                <ul>
+                    <li>Exceptional communicator and collaborative team player.</li>
+                    <li>Strong analytical thinker with a curiosity-driven mindset.</li>
+                    <li>Passionate about data-driven decision-making and using technology to solve real-world problems.</li>
+                    <li>Adaptable, organized, and committed to continuous learning.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

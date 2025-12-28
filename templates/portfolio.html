@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Zenos - Portfolio{% endblock %}
+
+{% block content %}
+<div class="portfolio">
+    {% for category in categories %}
+    <a href="{{ url_for('portfolio_category', category=category.id) }}" class="card-link">
+        <div class="cards">
+            <div class="card-img">
+                {% if category.id == 'python' %}
+                    <img src="{{ url_for('static', filename='images/PythonProjects.jpg') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'web' %}
+                    <img src="{{ url_for('static', filename='images/web-projects.png') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'java' %}
+                    <img src="{{ url_for('static', filename='images/java-logo.jpg') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'cpp' %}
+                    <img src="{{ url_for('static', filename='images/cpp-logo.png') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'android' %}
+                    <img src="{{ url_for('static', filename='images/apps-projects.png') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'unity' %}
+                    <img src="{{ url_for('static', filename='images/unity-projects.png') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'blender' %}
+                    <img src="{{ url_for('static', filename='images/blender-projects.png') }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'uxui' %}
+                    <img src="{{ url_for('static', filename='images/uxuidesign.png') }}" alt="Zenos-{{ category.name }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/projects-bg.jpg') }}" alt="Zenos-{{ category.name }}">
+                {% endif %}
+            </div>
+            <div class="card-txt">
+                <h1>{{ category.icon }} {{ category.name }}</h1>
+            <p>
+                {% if category.id == 'python' %}
+                A collection of Python projects showcasing my skills in data analysis,
+                automation, web development, and problem-solving. Each project 
+                demonstrates practical applications of Python in real-world scenarios.
+                {% elif category.id == 'web' %}
+                A diverse set of web development projects including dynamic 
+                websites, web apps, and Python-based bots. These projects 
+                showcase my skills in full-stack development, automation, 
+                and creating responsive, user-friendly digital experiences.
+                {% elif category.id == 'java' %}
+                A collection of Java projects highlighting my experience with 
+                object-oriented programming, software development, and building 
+                scalable applications. These projects range from desktop apps 
+                to backend systems, demonstrating clean code and practical 
+                problem-solving.
+                {% elif category.id == 'cpp' %}
+                A collection of C++ projects showcasing my skills in 
+                object-oriented programming, data structures, and algorithm 
+                design. These projects demonstrate efficient coding practices 
+                and problem-solving abilities through practical applications.
+                {% elif category.id == 'android' %}
+                A collection of Android app projects demonstrating my mobile 
+                development skills. These apps showcase intuitive user interfaces, 
+                engaging functionality, and practical solutions for everyday needs.
+                {% elif category.id == 'unity' %}
+                A collection of Unity projects demonstrating my skills in 
+                game development, 3D animation, and interactive experiences. 
+                These projects highlight gameplay mechanics, AI programming, 
+                and immersive design across various platforms.
+                {% elif category.id == 'blender' %}
+                A collection of Blender projects showcasing my work in 
+                3D modeling, animation, and visual design. These projects 
+                highlight my creativity and technical skills in crafting 
+                detailed models, realistic textures, and captivating animations.
+                {% elif category.id == 'uxui' %}
+                A showcase of UX/UI design projects created using tools like 
+                Photoshop, Adobe XD, Illustrator, and Figma. These works 
+                highlight my ability to craft intuitive user experiences, 
+                engaging interfaces, and visually compelling designs.
+                {% endif %}
+            </p>
+            <button class="projects-btn">Check out Projects</button>
+        </div>
+    </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

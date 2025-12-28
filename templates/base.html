@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}Zenos - Gopal Niraula{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Logo-Icon.png') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Zenos">
+        </a>
+        <ul>
+            <a href="{{ url_for('index') }}"><li class="{% if request.endpoint == 'index' %}active{% endif %}">HOME</li></a>
+            <a href="{{ url_for('about') }}"><li class="{% if request.endpoint == 'about' %}active{% endif %}">ABOUT</li></a>
+            <a href="{{ url_for('portfolio') }}"><li class="{% if request.endpoint == 'portfolio' or request.endpoint == 'portfolio_category' %}active{% endif %}">PORTFOLIO</li></a>
+            <a href="{{ url_for('contact') }}"><li class="{% if request.endpoint == 'contact' %}active{% endif %}">CONTACT</li></a>
+        </ul>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <span class="footer-separator">|</span>
+                <a href="{{ url_for('about') }}">About</a>
+                <span class="footer-separator">|</span>
+                <a href="{{ url_for('portfolio') }}">Portfolio</a>
+                <span class="footer-separator">|</span>
+                <a href="{{ url_for('contact') }}">Contact</a>
+            </div>
+            <div class="footer-divider"></div>
+            <p>Copyright &copy; {{ current_year }} by Zenos - {{ info.name }}. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        htmlElement.setAttribute('data-theme', savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='scripts/particles.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/enhanced.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

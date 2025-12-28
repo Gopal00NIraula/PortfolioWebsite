@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Zenos - {{ info.name }}{% endblock %}
+
+{% block content %}
+<div id="particles-js">  
+    <div class="title">
+        <p>{{ info.title }}</p>
+        <h1>Hi, I'm <span>{{ info.name }}</span> From {{ info.location }}</h1>
+        <div class="herobtn">
+            <a href="{{ url_for('about') }}">
+                <button class="hero-btn">Know Me More</button>
+            </a>
+            <a href="{{ url_for('portfolio') }}">
+                <button class="hero-btn">Portfolio</button>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

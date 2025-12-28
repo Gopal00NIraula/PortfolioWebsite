@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if project %}Edit{% else %}Add{% endif %} Project - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <nav class="admin-nav">
+            <h1>{% if project %}✏️ Edit Project{% else %}➕ Add New Project{% endif %}</h1>
+            <div class="nav-links">
+                <a href="{{ url_for('admin.dashboard') }}">← Back to Dashboard</a>
+            </div>
+        </nav>
+        
+        <div class="content">
+            <div class="form-container">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Project Title *</label>
+                        <input type="text" id="title" name="title" 
+                               value="{% if project %}{{ project.title }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="python" {% if project and project.category == 'python' %}selected{% endif %}>Python Projects</option>
+                            <option value="web" {% if project and project.category == 'web' %}selected{% endif %}>Web Development</option>
+                            <option value="java" {% if project and project.category == 'java' %}selected{% endif %}>Java Projects</option>
+                            <option value="cpp" {% if project and project.category == 'cpp' %}selected{% endif %}>C++ Projects</option>
+                            <option value="android" {% if project and project.category == 'android' %}selected{% endif %}>Android Apps</option>
+                            <option value="unity" {% if project and project.category == 'unity' %}selected{% endif %}>Unity Games</option>
+                            <option value="blender" {% if project and project.category == 'blender' %}selected{% endif %}>3D Modeling</option>
+                            <option value="uxui" {% if project and project.category == 'uxui' %}selected{% endif %}>UX/UI Design</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Short Description</label>
+                        <textarea id="description" name="description" rows="2" placeholder="Brief description for card view">{% if project %}{{ project.description }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="readme">Upload README.md File 📄</label>
+                        <input type="file" id="readme" name="readme" accept=".md">
+                        <small>Upload a README.md file from GitHub or write your own. It will be automatically formatted with markdown styling.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="full_description">OR Write Full Description / Explanation</label>
+                        <textarea id="full_description" name="full_description" rows="8" placeholder="Detailed project explanation, features, implementation details, etc.">{% if project %}{{ project.full_description }}{% endif %}</textarea>
+                        <small>This will be shown on the project detail page (will be overwritten if README.md is uploaded)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="technologies">Technologies Used</label>
+                        <input type="text" id="technologies" name="technologies" 
+                               value="{% if project %}{{ project.technologies }}{% endif %}"
+                               placeholder="e.g., Python, Flask, JavaScript">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">Main Project Image (Thumbnail)</label>
+                        {% if project and project.image_url %}
+                            <div class="current-image">
+                                <img src="{{ url_for('static', filename='images/' + project.image_url) }}" 
+                                     alt="Current image">
+                                <p>Current thumbnail</p>
+                            </div>
+                        {% endif %}
+                        <input type="file" id="image" name="image" accept="image/*">
+                        <small>Main image for card view</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="screenshots">Project Screenshots (Multiple)</label>
+                        {% if project and project.screenshots %}
+                            <div class="current-screenshots">
+                                {% for screenshot in project.screenshots.split(',') %}
+                                    {% if screenshot %}
+                                    <img src="{{ url_for('static', filename='images/' + screenshot) }}" 
+                                         alt="Screenshot" class="screenshot-thumb">
+                                    {% endif %}
+                                {% endfor %}
+                                <p>Current screenshots</p>
+                            </div>
+                        {% endif %}
+                        <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple>
+                        <small>Upload multiple images for carousel (hold Ctrl/Cmd to select multiple)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project_url">Project URL</label>
+                        <input type="url" id="project_url" name="project_url" 
+                               value="{% if project %}{{ project.project_url }}{% endif %}"
+                               placeholder="https://...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="github_url">GitHub URL</label>
+                        <input type="url" id="github_url" name="github_url" 
+                               value="{% if project %}{{ project.github_url }}{% endif %}"
+                               placeholder="https://github.com/...">
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" name="featured" value="1"
+                                   {% if project and project.featured %}checked{% endif %}>
+                            <span>⭐ Featured Project</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            {% if project %}Update Project{% else %}Add Project{% endif %}
+                        </button>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

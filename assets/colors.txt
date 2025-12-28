@@ -1,7 +1,0 @@
-#000000 : Black
-#ffffff : White
-#ff8d29 : Primary
-#ff7729 : Buttons / Hover
-#ff773d : Secondary
-#242424 : Lighter bg - Black
-#1b1b1b : Lighter fg - Black
