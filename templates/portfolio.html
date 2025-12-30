@@ -8,7 +8,9 @@
     <a href="{{ url_for('portfolio_category', category=category.id) }}" class="card-link">
         <div class="cards">
             <div class="card-img">
-                {% if category.id == 'python' %}
+                {% if category.icon_image %}
+                    <img src="{{ url_for('static', filename='images/' + category.icon_image) }}" alt="Zenos-{{ category.name }}">
+                {% elif category.id == 'python' %}
                     <img src="{{ url_for('static', filename='images/PythonProjects.jpg') }}" alt="Zenos-{{ category.name }}">
                 {% elif category.id == 'web' %}
                     <img src="{{ url_for('static', filename='images/web-projects.png') }}" alt="Zenos-{{ category.name }}">

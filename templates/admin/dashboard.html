@@ -11,6 +11,7 @@
         <nav class="admin-nav">
             <h1>📊 Admin Dashboard</h1>
             <div class="nav-links">
+                <a href="{{ url_for('admin.manage_categories') }}" class="btn-secondary">Manage Categories</a>
                 <a href="{{ url_for('index') }}" target="_blank">View Website</a>
                 <a href="{{ url_for('admin.logout') }}">Logout</a>
             </div>

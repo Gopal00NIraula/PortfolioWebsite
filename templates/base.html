@@ -12,7 +12,8 @@
     <!-- Navigation Bar -->
     <div class="navbar">
         <a href="{{ url_for('index') }}">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Zenos">
+            <img class="logo-dark" src="{{ url_for('static', filename='images/logo.png') }}" alt="Zenos">
+            <img class="logo-light" src="{{ url_for('static', filename='images/logo-light.png') }}" alt="Zenos">
         </a>
         <ul>
             <a href="{{ url_for('index') }}"><li class="{% if request.endpoint == 'index' %}active{% endif %}">HOME</li></a>

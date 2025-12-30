@@ -170,19 +170,70 @@
     color: #999;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .category-page {
-        padding: 80px 20px 20px;
+        padding: 80px 20px 30px;
     }
     
     .category-header {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
+        text-align: center;
+        align-items: stretch;
+    }
+    
+    .category-header h1 {
+        font-size: 32px;
+    }
+    
+    .back-link {
         text-align: center;
     }
     
     .projects-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .project-content h3 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-page {
+        padding: 70px 15px 25px;
+    }
+    
+    .category-header h1 {
+        font-size: 26px;
+    }
+    
+    .back-link {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+    
+    .project-image {
+        height: 180px;
+    }
+    
+    .project-content {
+        padding: 20px;
+    }
+    
+    .project-content h3 {
+        font-size: 18px;
+    }
+    
+    .project-content p {
+        font-size: 14px;
+    }
+    
+    .tech-tag {
+        font-size: 11px;
+        padding: 4px 10px;
     }
 }
 </style>

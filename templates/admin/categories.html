@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Manage Portfolio Categories</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('admin.logout') }}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="categories-info">
+            <p>Control which project categories are visible on your portfolio page. Unlisted categories won't appear to visitors but projects remain saved.</p>
+        </div>
+
+        <!-- Add New Category Form -->
+        <div class="add-category-section">
+            <h2>Add New Category</h2>
+            <form method="POST" action="{{ url_for('admin.add_category') }}" class="add-category-form" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category_id">Category ID <span class="required">*</span></label>
+                        <input type="text" id="category_id" name="category_id" required placeholder="e.g., machine-learning">
+                        <small>Lowercase, no spaces (use hyphens)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Category Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required placeholder="e.g., Machine Learning">
+                    </div>
+                    <div class="form-group">
+                        <label for="icon_image">Icon Image</label>
+                        <input type="file" id="icon_image" name="icon_image" accept="image/*">
+                        <small>Upload icon image (optional)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="icon">Or Emoji Icon</label>
+                        <input type="text" id="icon" name="icon" placeholder="🤖" maxlength="2">
+                        <small>Single emoji (if no image)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="color">Color</label>
+                        <input type="color" id="color" name="color" value="#ff8d29">
+                    </div>
+                    <div class="form-group form-submit">
+                        <button type="submit" class="btn btn-primary">+ Add Category</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <h2>Existing Categories</h2>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card {% if not category.is_listed %}unlisted{% endif %}">
+                <div class="category-header">
+                    <div class="category-info">
+                        {% if category.icon_image %}
+                            <img src="{{ url_for('static', filename='images/' + category.icon_image) }}" alt="{{ category.name }}" class="category-icon-img">
+                        {% else %}
+                            <span class="category-icon">{{ category.icon }}</span>
+                        {% endif %}
+                        <div>
+                            <h3>{{ category.name }}</h3>
+                            <p class="category-id">ID: {{ category.id }}</p>
+                        </div>
+                    </div>
+                    <div class="category-badge" style="background-color: {{ category.color }}20; color: {{ category.color }};">
+                        {{ category.color }}
+                    </div>
+                </div>
+                
+                <div class="category-status">
+                    {% if category.is_listed %}
+                        <span class="status-badge status-listed">✓ Listed</span>
+                    {% else %}
+                        <span class="status-badge status-unlisted">✗ Unlisted</span>
+                    {% endif %}
+                </div>
+
+                <form method="POST" action="{{ url_for('admin.toggle_category', category_id=category.id) }}" class="toggle-form">
+                    <button type="submit" class="btn {% if category.is_listed %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if category.is_listed %}
+                            Unlist Category
+                        {% else %}
+                            List Category
+                        {% endif %}
+                    </button>
+                </form>
+
+                <div class="action-buttons">
+                    <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-edit">✏️ Edit</a>
+                    <form method="POST" action="{{ url_for('admin.delete_category', category_id=category.id) }}" class="delete-form-inline" onsubmit="return confirm('Are you sure you want to delete this category? Projects using it will have no category.');">
+                        <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <style>
+        .categories-info {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ff8d29;
+        }
+
+        .categories-info p {
+            margin: 0;
+            color: #ccc;
+            font-size: 15px;
+        }
+
+        /* Add Category Form */
+        .add-category-section {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border: 2px solid #ff8d29;
+        }
+
+        .add-category-section h2 {
+            color: #ff8d29;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .add-category-form .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-submit {
+            grid-column: 1 / -1;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-group .required {
+            color: #ff8d29;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="color"],
+        .form-group input[type="file"] {
+            padding: 10px 15px;
+            background: #1a1a1a;
+            border: 2px solid #3d3d3d;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input[type="file"] {
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .form-group input[type="file"]::file-selector-button {
+            background: #ff8d29;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .form-group input[type="file"]::file-selector-button:hover {
+            background: #ff6b00;
+        }
+
+        .form-group input[type="color"] {
+            height: 45px;
+            cursor: pointer;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff8d29;
+        }
+
+        .form-group small {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .form-group button[type="submit"] {
+            margin-top: 0;
+            height: 45px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .category-card {
+            background: #2d2d2d;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #3d3d3d;
+            transition: all 0.3s;
+        }
+
+        .category-card.unlisted {
+            opacity: 0.6;
+            border-color: #666;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 141, 41, 0.2);
+            border-color: #ff8d29;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .category-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .category-icon {
+            display: block;
+            font-size: 48px;
+            line-height: 1;
+        }
+
+        .category-icon-img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .category-card h3 {
+            margin: 0 0 5px 0;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .category-id {
+            margin: 0;
+            font-size: 12px;
+            color: #999;
+            font-family: monospace;
+        }
+
+        .category-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-status {
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-listed {
+            background: #28a74520;
+            color: #28a745;
+        }
+
+        .status-unlisted {
+            background: #dc354520;
+            color: #dc3545;
+        }
+
+        .toggle-form {
+            margin-top: 15px;
+        }
+
+        .toggle-form button {
+            width: 100%;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .delete-form-inline {
+            display: contents;
+        }
+
+        .btn-edit {
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-primary {
+            background: #ff8d29;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #ff6b00;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .add-category-form .form-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .add-category-form .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-icon-img {
+                width: 48px;
+                height: 48px;
+            }
+        }
+    </style>
+</body>
+</html>

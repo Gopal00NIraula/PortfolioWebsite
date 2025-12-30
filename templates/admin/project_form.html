@@ -28,14 +28,9 @@
                         <label for="category">Category *</label>
                         <select id="category" name="category" required>
                             <option value="">Select Category</option>
-                            <option value="python" {% if project and project.category == 'python' %}selected{% endif %}>Python Projects</option>
-                            <option value="web" {% if project and project.category == 'web' %}selected{% endif %}>Web Development</option>
-                            <option value="java" {% if project and project.category == 'java' %}selected{% endif %}>Java Projects</option>
-                            <option value="cpp" {% if project and project.category == 'cpp' %}selected{% endif %}>C++ Projects</option>
-                            <option value="android" {% if project and project.category == 'android' %}selected{% endif %}>Android Apps</option>
-                            <option value="unity" {% if project and project.category == 'unity' %}selected{% endif %}>Unity Games</option>
-                            <option value="blender" {% if project and project.category == 'blender' %}selected{% endif %}>3D Modeling</option>
-                            <option value="uxui" {% if project and project.category == 'uxui' %}selected{% endif %}>UX/UI Design</option>
+                            {% for cat_id, cat_name in categories %}
+                            <option value="{{ cat_id }}" {% if project and project.category == cat_id %}selected{% endif %}>{{ cat_name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     

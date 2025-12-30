@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request
 import os
 from datetime import datetime
 from admin import admin_bp
-from database import get_projects_by_category, init_db
+from database import get_projects_by_category, get_listed_categories, get_category_by_id, init_db, init_default_categories
 
 app = Flask(__name__)
 
@@ -17,23 +17,14 @@ app.register_blueprint(admin_bp)
 
 # Initialize database
 init_db()
+init_default_categories()
 
 # Context processor to inject current year into all templates
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
 
-# Portfolio project categories
-PORTFOLIO_CATEGORIES = [
-    {'id': 'python', 'name': 'Python Projects', 'icon': '🐍', 'color': '#3776ab'},
-    {'id': 'web', 'name': 'Web Development', 'icon': '🌐', 'color': '#e34f26'},
-    {'id': 'java', 'name': 'Java Projects', 'icon': '☕', 'color': '#007396'},
-    {'id': 'cpp', 'name': 'C++ Projects', 'icon': '⚡', 'color': '#00599c'},
-    {'id': 'android', 'name': 'Android Apps', 'icon': '📱', 'color': '#3ddc84'},
-    {'id': 'unity', 'name': 'Unity Games', 'icon': '🎮', 'color': '#000000'},
-    {'id': 'blender', 'name': '3D Modeling', 'icon': '🎨', 'color': '#f5792a'},
-    {'id': 'uxui', 'name': 'UX/UI Design', 'icon': '✨', 'color': '#ff6b6b'}
-]
+# Remove hardcoded categories - now loaded from database
 
 # Personal information
 PERSONAL_INFO = {
@@ -64,14 +55,19 @@ def about():
 @app.route('/portfolio')
 def portfolio():
     """Portfolio page"""
-    return render_template('portfolio.html', categories=PORTFOLIO_CATEGORIES, info=PERSONAL_INFO)
+    categories = get_listed_categories()
+    return render_template('portfolio.html', categories=categories, info=PERSONAL_INFO)
 
 @app.route('/portfolio/<category>')
 def portfolio_category(category):
     """Individual portfolio category page"""
-    category_info = next((cat for cat in PORTFOLIO_CATEGORIES if cat['id'] == category), None)
+    category_info = get_category_by_id(category)
     if not category_info:
         return "Category not found", 404
+    
+    # Check if category is listed
+    if not category_info['is_listed']:
+        return "Category is currently unlisted", 404
     
     # Get projects from database
     projects = get_projects_by_category(category)
@@ -90,8 +86,8 @@ def project_detail(project_id):
     if not project:
         return "Project not found", 404
     
-    # Get category info
-    category_info = next((cat for cat in PORTFOLIO_CATEGORIES if cat['id'] == project['category']), None)
+    # Get category info from database
+    category_info = get_category_by_id(project['category'])
     
     return render_template('portfolio/project_detail.html', 
                          project=project,

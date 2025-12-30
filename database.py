@@ -36,6 +36,27 @@ def init_db():
         )
     ''')
     
+    # Create categories table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS categories (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            icon TEXT,
+            icon_image TEXT,
+            color TEXT,
+            is_listed BOOLEAN DEFAULT 1,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Migration: Add icon_image column if it doesn't exist
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(categories)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'icon_image' not in columns:
+        conn.execute("ALTER TABLE categories ADD COLUMN icon_image TEXT")
+    
     # Create admin users table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS admin_users (
@@ -128,6 +149,142 @@ def update_project(project_id, title, category, description, technologies, image
     ''', (title, category, description, full_description, technologies, image_url, screenshots, project_url, github_url, featured, project_id))
     conn.commit()
     conn.close()
+
+def get_all_categories():
+    """Get all categories ordered by sort_order"""
+    conn = get_db_connection()
+    categories = conn.execute(
+        'SELECT * FROM categories ORDER BY sort_order ASC, name ASC'
+    ).fetchall()
+    conn.close()
+    return categories
+
+def get_listed_categories():
+    """Get only listed/visible categories"""
+    conn = get_db_connection()
+    categories = conn.execute(
+        'SELECT * FROM categories WHERE is_listed = 1 ORDER BY sort_order ASC, name ASC'
+    ).fetchall()
+    conn.close()
+    return categories
+
+def get_category_by_id(category_id):
+    """Get a single category by ID"""
+    conn = get_db_connection()
+    category = conn.execute(
+        'SELECT * FROM categories WHERE id = ?',
+        (category_id,)
+    ).fetchone()
+    conn.close()
+    return category
+
+def toggle_category_visibility(category_id):
+    """Toggle category visibility (list/unlist)"""
+    conn = get_db_connection()
+    # Get current state
+    category = conn.execute(
+        'SELECT is_listed FROM categories WHERE id = ?',
+        (category_id,)
+    ).fetchone()
+    
+    if category:
+        new_state = 0 if category['is_listed'] else 1
+        conn.execute(
+            'UPDATE categories SET is_listed = ? WHERE id = ?',
+            (new_state, category_id)
+        )
+        conn.commit()
+    conn.close()
+    return new_state if category else None
+
+def init_default_categories():
+    """Initialize default categories if they don't exist"""
+    default_categories = [
+        {'id': 'python', 'name': 'Python Projects', 'icon': '🐍', 'color': '#3776ab', 'sort_order': 1},
+        {'id': 'web', 'name': 'Web Development', 'icon': '🌐', 'color': '#e34f26', 'sort_order': 2},
+        {'id': 'java', 'name': 'Java Projects', 'icon': '☕', 'color': '#007396', 'sort_order': 3},
+        {'id': 'cpp', 'name': 'C++ Projects', 'icon': '⚡', 'color': '#00599c', 'sort_order': 4},
+        {'id': 'android', 'name': 'Android Apps', 'icon': '📱', 'color': '#3ddc84', 'sort_order': 5},
+        {'id': 'unity', 'name': 'Unity Games', 'icon': '🎮', 'color': '#000000', 'sort_order': 6},
+        {'id': 'blender', 'name': '3D Modeling', 'icon': '🎨', 'color': '#f5792a', 'sort_order': 7},
+        {'id': 'uxui', 'name': 'UX/UI Design', 'icon': '✨', 'color': '#ff6b6b', 'sort_order': 8}
+    ]
+    
+    conn = get_db_connection()
+    for cat in default_categories:
+        # Check if category exists
+        existing = conn.execute(
+            'SELECT id FROM categories WHERE id = ?',
+            (cat['id'],)
+        ).fetchone()
+        
+        if not existing:
+            conn.execute(
+                'INSERT INTO categories (id, name, icon, color, is_listed, sort_order) VALUES (?, ?, ?, ?, 1, ?)',
+                (cat['id'], cat['name'], cat['icon'], cat['color'], cat['sort_order'])
+            )
+    
+    conn.commit()
+    conn.close()
+
+def add_category(category_id, name, icon, color, sort_order=999, icon_image=None):
+    """Add a new category"""
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            'INSERT INTO categories (id, name, icon, icon_image, color, is_listed, sort_order) VALUES (?, ?, ?, ?, ?, 1, ?)',
+            (category_id, name, icon, icon_image, color, sort_order)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        conn.close()
+        return False
+
+def update_category(category_id, name, icon, color, icon_image=None):
+    """Update an existing category"""
+    conn = get_db_connection()
+    try:
+        if icon_image is not None:
+            # Update with new image
+            conn.execute(
+                'UPDATE categories SET name = ?, icon = ?, icon_image = ?, color = ? WHERE id = ?',
+                (name, icon, icon_image, color, category_id)
+            )
+        else:
+            # Update without changing image
+            conn.execute(
+                'UPDATE categories SET name = ?, icon = ?, color = ? WHERE id = ?',
+                (name, icon, color, category_id)
+            )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        conn.close()
+        return False
+
+def delete_category(category_id):
+    """Delete a category and update projects using it to NULL"""
+    conn = get_db_connection()
+    # First check if any projects use this category
+    projects_count = conn.execute(
+        'SELECT COUNT(*) as count FROM projects WHERE category = ?',
+        (category_id,)
+    ).fetchone()['count']
+    
+    # Update projects to have NULL category
+    conn.execute(
+        'UPDATE projects SET category = NULL WHERE category = ?',
+        (category_id,)
+    )
+    
+    # Delete the category
+    conn.execute('DELETE FROM categories WHERE id = ?', (category_id,))
+    conn.commit()
+    conn.close()
+    return projects_count
 
 def delete_project(project_id):
     """Delete a project"""

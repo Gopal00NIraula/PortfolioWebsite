@@ -12,10 +12,14 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'password123')  # Change this!
 
-UPLOAD_FOLDER = 'static/images/projects'
-README_FOLDER = 'static/readme'
+# Use absolute paths for upload folders (critical for PythonAnywhere)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'images', 'projects')
+README_FOLDER = os.path.join(BASE_DIR, 'static', 'readme')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
+# Ensure upload directories exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(README_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
@@ -61,6 +65,11 @@ def dashboard():
     """Admin dashboard"""
     projects = get_all_projects()
     return render_template('admin/dashboard.html', projects=projects)
+
+def get_category_choices():
+    """Helper function to get category choices for forms"""
+    categories = get_all_categories()
+    return [(cat['id'], f"{cat['icon']} {cat['name']}") for cat in categories]
 
 @admin_bp.route('/project/new', methods=['GET', 'POST'])
 @login_required
@@ -119,7 +128,8 @@ def new_project():
         flash('Project added successfully!', 'success')
         return redirect(url_for('admin.dashboard'))
     
-    return render_template('admin/project_form.html', project=None)
+    categories = get_category_choices()
+    return render_template('admin/project_form.html', project=None, categories=categories)
 
 @admin_bp.route('/project/edit/<int:project_id>', methods=['GET', 'POST'])
 @login_required
@@ -180,7 +190,8 @@ def edit_project(project_id):
         flash('Project updated successfully!', 'success')
         return redirect(url_for('admin.dashboard'))
     
-    return render_template('admin/project_form.html', project=project)
+    categories = get_category_choices()
+    return render_template('admin/project_form.html', project=project, categories=categories)
 
 @admin_bp.route('/project/delete/<int:project_id>')
 @login_required
@@ -189,3 +200,137 @@ def delete_project_route(project_id):
     delete_project(project_id)
     flash('Project deleted successfully!', 'success')
     return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/categories')
+@login_required
+def manage_categories():
+    """Manage categories page"""
+    from database import get_all_categories
+    categories = get_all_categories()
+    return render_template('admin/categories.html', categories=categories)
+
+@admin_bp.route('/category/toggle/<category_id>', methods=['POST'])
+@login_required
+def toggle_category(category_id):
+    """Toggle category visibility (list/unlist)"""
+    from database import toggle_category_visibility
+    new_state = toggle_category_visibility(category_id)
+    
+    if new_state is not None:
+        status = "listed" if new_state else "unlisted"
+        flash(f'Category {status} successfully!', 'success')
+    else:
+        flash('Category not found!', 'error')
+    
+    return redirect(url_for('admin.manage_categories'))
+
+@admin_bp.route('/category/add', methods=['POST'])
+@login_required
+def add_category():
+    """Add a new category"""
+    from database import add_category as db_add_category, get_all_categories
+    import os
+    from werkzeug.utils import secure_filename
+    
+    category_id = request.form.get('category_id', '').strip().lower()
+    name = request.form.get('name', '').strip()
+    icon = request.form.get('icon', '').strip()
+    color = request.form.get('color', '#ff8d29').strip()
+    
+    # Validation
+    if not category_id or not name:
+        flash('Category ID and Name are required!', 'error')
+        return redirect(url_for('admin.manage_categories'))
+    
+    # Handle icon image upload
+    icon_image = None
+    if 'icon_image' in request.files:
+        file = request.files['icon_image']
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            # Create category-icons directory if it doesn't exist
+            icons_dir = os.path.join('static', 'images', 'category-icons')
+            os.makedirs(icons_dir, exist_ok=True)
+            
+            # Save with category_id as filename
+            ext = os.path.splitext(filename)[1]
+            icon_filename = f"{category_id}{ext}"
+            file.save(os.path.join(icons_dir, icon_filename))
+            icon_image = f"category-icons/{icon_filename}"
+    
+    # Get max sort order
+    categories = get_all_categories()
+    max_sort = max([cat['sort_order'] for cat in categories], default=0) if categories else 0
+    
+    # Add category
+    success = db_add_category(category_id, name, icon, color, max_sort + 1, icon_image)
+    
+    if success:
+        flash(f'Category "{name}" added successfully!', 'success')
+    else:
+        flash('Category ID already exists or database error!', 'error')
+    
+    return redirect(url_for('admin.manage_categories'))
+
+@admin_bp.route('/category/delete/<category_id>', methods=['POST'])
+@login_required
+def delete_category(category_id):
+    """Delete a category"""
+    from database import delete_category as db_delete_category
+    
+    projects_count = db_delete_category(category_id)
+    
+    if projects_count > 0:
+        flash(f'Category deleted! {projects_count} project(s) were updated to have no category.', 'warning')
+    else:
+        flash('Category deleted successfully!', 'success')
+    
+    return redirect(url_for('admin.manage_categories'))
+
+@admin_bp.route('/category/edit/<category_id>', methods=['GET', 'POST'])
+@login_required
+def edit_category(category_id):
+    """Edit a category"""
+    from database import get_category_by_id, update_category
+    import os
+    from werkzeug.utils import secure_filename
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        icon = request.form.get('icon', '').strip()
+        color = request.form.get('color', '#ff8d29').strip()
+        
+        if not name:
+            flash('Category name is required!', 'error')
+            return redirect(url_for('admin.edit_category', category_id=category_id))
+        
+        # Handle icon image upload
+        icon_image = None
+        if 'icon_image' in request.files:
+            file = request.files['icon_image']
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                icons_dir = os.path.join('static', 'images', 'category-icons')
+                os.makedirs(icons_dir, exist_ok=True)
+                
+                ext = os.path.splitext(filename)[1]
+                icon_filename = f"{category_id}{ext}"
+                file.save(os.path.join(icons_dir, icon_filename))
+                icon_image = f"category-icons/{icon_filename}"
+        
+        # Update category
+        success = update_category(category_id, name, icon, color, icon_image)
+        
+        if success:
+            flash(f'Category "{name}" updated successfully!', 'success')
+            return redirect(url_for('admin.manage_categories'))
+        else:
+            flash('Failed to update category!', 'error')
+    
+    # GET request - show edit form
+    category = get_category_by_id(category_id)
+    if not category:
+        flash('Category not found!', 'error')
+        return redirect(url_for('admin.manage_categories'))
+    
+    return render_template('admin/edit_category.html', category=category)
